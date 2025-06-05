@@ -1,0 +1,247 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-9">
+      <div class="card shadow-lg border-0">
+        <div class="card-body">
+          <div class="text-center mb-4">
+            {% if avatar %}
+              <img src="{{ avatar }}" alt="Avatar" class="rounded-circle mb-2 shadow" width="110" height="110">
+            {% endif %}
+            <h2 class="mb-1 mt-2">📊 Statistiques de <span class="text-primary">{{ username }}</span></h2>
+          </div>
+          <div class="row text-center mb-4">
+            <div class="col-4">
+              <div class="stat-box bg-success bg-opacity-10 rounded p-3 mb-2">
+                <div class="fs-2 fw-bold text-success">{{ nb_watched }}</div>
+                <div class="small">Vus</div>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="stat-box bg-warning bg-opacity-10 rounded p-3 mb-2">
+                <div class="fs-2 fw-bold text-warning">{{ nb_watching }}</div>
+                <div class="small">En cours</div>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="stat-box bg-info bg-opacity-10 rounded p-3 mb-2">
+                <div class="fs-2 fw-bold text-info">{{ nb_planned }}</div>
+                <div class="small">Planifiés</div>
+              </div>
+            </div>
+          </div>
+          <!-- Nouvelles stats box -->
+          <div class="row text-center mb-4">
+            <div class="col-3">
+              <div class="stat-box bg-secondary bg-opacity-10 rounded p-3 mb-2">
+                <div class="fs-4 fw-bold text-secondary">{{ nb_total }}</div>
+                <div class="small">Total animés</div>
+              </div>
+            </div>
+            <div class="col-3">
+              <div class="stat-box bg-danger bg-opacity-10 rounded p-3 mb-2">
+                <div class="fs-4 fw-bold text-danger">{{ nb_dropped }}</div>
+                <div class="small">Abandonnés</div>
+              </div>
+            </div>
+            <div class="col-3">
+              <div class="stat-box bg-primary bg-opacity-10 rounded p-3 mb-2">
+                <div class="fs-4 fw-bold text-primary">{{ avg_episodes }}</div>
+                <div class="small">Épisodes/animé</div>
+              </div>
+            </div>
+            <div class="col-3">
+              <div class="stat-box bg-success bg-opacity-10 rounded p-3 mb-2">
+                <div class="fs-4 fw-bold text-success">{{ completion_pct }}%</div>
+                <div class="small">Complétion</div>
+              </div>
+            </div>
+          </div>
+          <ul class="list-group list-group-flush mb-3">
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span><i class="bi bi-collection-play"></i> <strong>Genres favoris :</strong></span>
+              <span>
+                {% for genre in genres %}
+                  <span class="badge bg-primary bg-opacity-75 me-1">{{ genre }}</span>
+                {% endfor %}
+              </span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span><i class="bi bi-collection"></i> <strong>Épisodes regardés :</strong></span>
+              <span class="fw-bold">{{ episodes_watched }}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span><i class="bi bi-clock-history"></i> <strong>Temps total passé :</strong></span>
+              <span class="fw-bold">
+                {{ (time_spent // 60) }}h {{ (time_spent % 60) }}min
+              </span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> <!-- Fin du container principal -->
+
+{% if favourites and favourites|length > 0 %}
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-9">
+      <div class="card shadow border-0">
+        <div class="card-body">
+          <h4 class="mb-4 text-center"><i class="bi bi-star-fill text-warning"></i> Top 5 animés les mieux notés</h4>
+          <div class="d-flex flex-wrap justify-content-center">
+            {% for fav in favourites %}
+              <div class="text-center m-3" style="width:120px;">
+                <img src="{{ fav.cover }}" alt="{{ fav.title }}" class="rounded shadow-sm mb-2" style="width:100px;height:140px;object-fit:cover;">
+                <div class="fw-semibold small text-truncate" title="{{ fav.title }}">{{ fav.title }}</div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% if score_distribution and score_distribution|length > 0 %}
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-9">
+      <div class="card shadow border-0">
+        <div class="card-body">
+          <h4 class="mb-4 text-center"><i class="bi bi-bar-chart-fill text-primary"></i> Répartition des notes données</h4>
+          <canvas id="scoreChart" height="120"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const scoreData = {{ score_distribution|tojson }};
+  const labels = scoreData.map(item => item[0]);
+  const data = scoreData.map(item => item[1]);
+
+  const ctx = document.getElementById('scoreChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: "Nombre d'animés",
+        data: data,
+        backgroundColor: 'rgba(13,110,253,0.3)',
+        borderColor: 'rgba(13,110,253,1)',
+        borderWidth: 2
+      }]
+    },
+    options: {
+      scales: {
+        x: { title: { display: true, text: 'Note attribuée' } },
+        y: { title: { display: true, text: "Nombre d'animés" }, beginAtZero: true, stepSize: 1 }
+      }
+    }
+  });
+</script>
+{% endif %}
+<!-- Bootstrap Icons CDN -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+{% if pie_distributions %}
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-9">
+      <div class="card shadow border-0">
+        <div class="card-body">
+          <h4 class="mb-4 text-center"><i class="bi bi-pie-chart-fill text-success"></i> Répartition par format, statut et pays</h4>
+          <div class="row">
+            <div class="col-md-4 mb-3 text-center">
+              <h6 class="text-center">Format</h6>
+              <div style="width: 200px; height: 200px; margin: 0 auto;">
+                <canvas id="formatPie"></canvas>
+              </div>
+            </div>
+            <div class="col-md-4 mb-3 text-center">
+              <h6 class="text-center">Statut</h6>
+              <div style="width: 200px; height: 200px; margin: 0 auto;">
+                <canvas id="statusPie"></canvas>
+              </div>
+            </div>
+            <div class="col-md-4 mb-3 text-center">
+              <h6 class="text-center">Pays d'origine</h6>
+              <div style="width: 200px; height: 200px; margin: 0 auto;">
+                <canvas id="countryPie"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // Limite à 3 labels + "Autres"
+  function top3WithOthers(data) {
+    if (data.length <= 3) return {labels: data.map(x => x[0]), counts: data.map(x => x[1])};
+    const top3 = data.slice(0, 3);
+    const othersCount = data.slice(3).reduce((sum, x) => sum + x[1], 0);
+    return {
+      labels: [...top3.map(x => x[0]), "Autres"],
+      counts: [...top3.map(x => x[1]), othersCount]
+    };
+  }
+
+  const formatData = {{ pie_distributions.format|tojson }};
+  const statusData = {{ pie_distributions.status|tojson }};
+  const countryData = {{ pie_distributions.country|tojson }};
+
+  const formatTop = top3WithOthers(formatData);
+  const statusTop = top3WithOthers(statusData);
+  const countryTop = top3WithOthers(countryData);
+
+  const pieColors = [
+    '#0d6efd', '#6f42c1', '#fd7e14', '#20c997', '#dc3545', '#ffc107', '#198754', '#0dcaf0', '#adb5bd', '#343a40'
+  ];
+
+  new Chart(document.getElementById('formatPie').getContext('2d'), {
+    type: 'pie',
+    data: {
+      labels: formatTop.labels,
+      datasets: [{
+        data: formatTop.counts,
+        backgroundColor: pieColors,
+      }]
+    },
+    options: { plugins: { legend: { display: false } } }
+  });
+
+  new Chart(document.getElementById('statusPie').getContext('2d'), {
+    type: 'pie',
+    data: {
+      labels: statusTop.labels,
+      datasets: [{
+        data: statusTop.counts,
+        backgroundColor: pieColors,
+      }]
+    },
+    options: { plugins: { legend: { display: false } } }
+  });
+
+  new Chart(document.getElementById('countryPie').getContext('2d'), {
+    type: 'pie',
+    data: {
+      labels: countryTop.labels,
+      datasets: [{
+        data: countryTop.counts,
+        backgroundColor: pieColors,
+      }]
+    },
+    options: { plugins: { legend: { display: false } } }
+  });
+</script>
+{% endif %}
+{% endblock %}

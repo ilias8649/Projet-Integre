@@ -1,0 +1,116 @@
+{% extends "layout.html" %}
+{% block content %}
+<div id="loading-spinner" class="spinner-overlay d-none">
+  <div class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">Chargement...</span>
+  </div>
+</div>
+<div class="container mt-4 mb-5">
+  <h2 class="mb-4 text-center">💬 Personnaliser tes recommandations</h2>
+  
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow-lg border-0 no-autohide">
+        <div class="card-body">
+          <div id="chat-history" class="mb-4">
+            {% for message in conversation %}
+              <div class="message {% if message.role == 'assistant' %}assistant{% else %}user{% endif %} mb-3">
+                <div class="message-content p-3 rounded">
+                  {% if message.role == 'assistant' %}
+                    <strong class="text-primary">AniPlanner :</strong>
+                  {% else %}
+                    <strong class="text-success">Toi :</strong>
+                  {% endif %}
+                  {{ message.content }}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+          
+          {% if not conversation_finished %}
+            <form method="post" action="/clarify" class="mt-4">
+              <div class="mb-3">
+                <label for="user-input" class="form-label">Ta réponse :</label>
+                <textarea id="user-input" name="user_input" class="form-control" rows="3" placeholder="Donne plus de détails sur tes préférences..." required></textarea>
+              </div>
+              <div class="d-flex justify-content-between">
+                <button type="submit" class="btn btn-primary">Envoyer</button>
+                <a href="/finish_clarification" class="btn btn-success">Terminer la conversation</a>
+              </div>
+            </form>
+          {% else %}
+            <div class="alert alert-success no-autohide">
+              <p><strong>Conversation terminée !</strong> Nous allons maintenant générer des recommandations adaptées.</p>
+              <div class="text-center mt-3">
+                <a href="/get_refined_recommendations" class="btn btn-blue-gradient" id="see-refined-recos">Voir mes recommandations personnalisées</a>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.spinner-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1050;
+}
+.message-content {
+  display: inline-block;
+  max-width: 85%;
+}
+
+.message.assistant .message-content {
+  background-color: #f0f7ff;
+  border-left: 4px solid #0d6efd;
+}
+
+.message.user .message-content {
+  background-color: #f0fff4;
+  border-left: 4px solid #198754;
+  margin-left: auto;
+}
+
+.message.user {
+  text-align: right;
+}
+
+.btn-blue-gradient {
+  background: linear-gradient(90deg, #2196f3 0%, #0d47a1 100%);
+  color: #fff !important;
+  border: none;
+  transition: box-shadow 0.2s, transform 0.2s;
+  box-shadow: 0 4px 16px rgba(33, 150, 243, 0.15);
+}
+
+.btn-blue-gradient:hover, .btn-blue-gradient:focus {
+  background: linear-gradient(90deg, #0d47a1 0%, #2196f3 100%);
+  color: #fff !important;
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 8px 24px rgba(33, 150, 243, 0.18);
+}
+</style>
+<script>
+document.querySelectorAll('form').forEach(form => {
+  form.addEventListener('submit', function() {
+    document.getElementById('loading-spinner').classList.remove('d-none');
+  });
+});
+const seeRefinedBtn = document.getElementById('see-refined-recos');
+if (seeRefinedBtn) {
+  seeRefinedBtn.addEventListener('click', function() {
+    document.getElementById('loading-spinner').classList.remove('d-none');
+  });
+}
+</script>
+{% endblock %}

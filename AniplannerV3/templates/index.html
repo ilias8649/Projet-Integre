@@ -1,0 +1,105 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="text-center mt-5">
+  <h2>Bienvenue sur <span class="text-primary">AniPlanner</span></h2>
+  <p class="lead">Votre assistant personnel de recommandations d'animés avec planification intelligente.</p>
+
+  <!-- Résumé des fonctionnalités moderne -->
+  <div class="row justify-content-center mb-4">
+    <div class="col-lg-10">
+      <div class="d-flex flex-wrap justify-content-center gap-4 py-4">
+        <div class="feature-card bg-white shadow-sm rounded-4 p-4 text-center">
+          <div class="icon-gradient mb-3">
+            <i class="bi bi-stars"></i>
+          </div>
+          <div class="fw-bold mb-1">Recommandations personnalisées</div>
+          <div class="small text-muted">Découvre des animés adaptés à tes goûts, ton historique et tes favoris grâce à l’IA.</div>
+        </div>
+        <div class="feature-card bg-white shadow-sm rounded-4 p-4 text-center">
+          <div class="icon-gradient mb-3">
+            <i class="bi bi-calendar2-check"></i>
+          </div>
+          <div class="fw-bold mb-1">Planification intelligente</div>
+          <div class="small text-muted">Ajoute facilement des épisodes à ton agenda Google et organise tes sessions de visionnage.</div>
+        </div>
+        <div class="feature-card bg-white shadow-sm rounded-4 p-4 text-center">
+          <div class="icon-gradient mb-3">
+            <i class="bi bi-bar-chart-line"></i>
+          </div>
+          <div class="fw-bold mb-1">Statistiques détaillées</div>
+          <div class="small text-muted">Analyse tes genres favoris, ton temps passé devant les animés et découvre des tendances sur ton profil.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if session.username %}
+    <div class="mt-4">
+      {% if session.avatar %}
+        <img src="{{ session.avatar }}" alt="Avatar" class="rounded-circle mb-3" width="150" height="150">
+      {% endif %}
+      <div class="mb-2 alert alert-success" style="max-width: 500px; margin: auto;"> 
+        Connecté en tant que <strong>{{ session.username }}</strong>
+      </div>
+      <div class="d-flex justify-content-center gap-3 mt-4 mb-5">
+        <a href="/recommend" class="btn btn-blue-gradient btn-lg shadow px-4 py-2 fw-bold" style="font-size:1.1rem;">
+          <i class="bi bi-stars me-2"></i>Recommandations
+        </a>
+        <a href="/stats" class="btn btn-outline-primary btn-lg shadow px-4 py-2 fw-bold" style="font-size:1.1rem;">
+          <i class="bi bi-bar-chart-line me-2"></i>Mes statistiques
+        </a>
+      </div>
+    </div>
+  {% else %}
+    <a href="/login" class="btn btn-blue-gradient btn-lg mt-3 shadow px-5 py-3 fw-bold" style="font-size:1.3rem; letter-spacing:1px;">
+      <i class="bi bi-person-circle me-2"></i>Se connecter avec AniList
+    </a>
+  {% endif %}
+</div>
+<style>
+/* Résumé des fonctionnalités */
+.feature-card {
+  min-width: 240px;
+  max-width: 320px;
+  border: none;
+  transition: transform 0.18s, box-shadow 0.18s;
+}
+.feature-card:hover {
+  transform: translateY(-6px) scale(1.04);
+  box-shadow: 0 8px 32px rgba(33,150,243,0.13);
+}
+.icon-gradient {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #2196f3 60%, #0d47a1 100%);
+  color: #fff;
+  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  font-size: 2rem;
+  box-shadow: 0 2px 8px rgba(33,150,243,0.10);
+  transition: transform 0.2s;
+}
+.icon-gradient i {
+  vertical-align: middle;
+}
+.icon-gradient:hover {
+  transform: scale(1.08) rotate(-6deg);
+  box-shadow: 0 4px 16px rgba(33,150,243,0.18);
+}
+.btn-blue-gradient {
+  background: linear-gradient(90deg, #2196f3 0%, #0d47a1 100%);
+  color: #fff !important;
+  border: none;
+  transition: box-shadow 0.2s, transform 0.2s;
+  box-shadow: 0 4px 16px rgba(33, 150, 243, 0.15);
+}
+.btn-blue-gradient:hover, .btn-blue-gradient:focus {
+  background: linear-gradient(90deg, #0d47a1 0%, #2196f3 100%);
+  color: #fff !important;
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 8px 24px rgba(33, 150, 243, 0.18);
+}
+</style>
+{% endblock %}

@@ -1,0 +1,167 @@
+{% extends "layout.html" %}
+{% block content %}
+<div id="loading-spinner" class="spinner-overlay d-none">
+  <div class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">Chargement...</span>
+  </div>
+</div>
+
+<h2 class="mb-4 mt-4 text-center">🎬 Recommandations personnalisées</h2>
+
+{% if message %}
+  <div class="alert alert-success text-center" role="alert">
+    {{ message }}
+  </div>
+{% endif %}
+
+{% if not recommendations %}
+  <div class="alert alert-info mx-auto mb-4 no-autohide" style="max-width: 600px;">
+    <strong>Comment ça marche&nbsp;?</strong><br>
+    Clique sur le bouton ci-dessous pour recevoir <b>1-3 animés recommandés</b> selon tes goûts, ton historique AniList et tes animés favoris.<br>
+    <span class="text-muted">Découvre de nouveaux titres adaptés à ton profil&nbsp;!</span>
+  </div>
+  <div class="text-center mb-4">
+    <form method="post" class="d-inline">
+      <button type="submit" class="btn btn-blue-gradient btn-lg px-5 py-3 fw-bold me-2" style="font-size:1.2rem; letter-spacing:1px;">
+        <i class="bi bi-stars me-2"></i>Recommander des animés
+      </button>
+    </form>
+    <a href="/start_clarification" class="btn btn-outline-primary btn-lg px-5 py-3 fw-bold" style="font-size:1.2rem; letter-spacing:1px;">
+      <i class="bi bi-chat-dots me-2"></i>Préciser mes préférences
+    </a>
+  </div>
+{% else %}
+<div class="row justify-content-center">
+{% for reco in recommendations %}
+  <div class="col-md-8 mb-4">
+    <div class="card shadow-sm border-custom">
+      <div class="row g-0 align-items-center">
+        <div class="col-md-4 text-center d-flex align-items-center justify-content-center">
+          {% if reco.cover %}
+            <img src="{{ reco.cover }}" alt="Affiche {{ reco.titre }}" class="img-fluid rounded my-4" 
+                 style="max-height:320px; max-width:100%;" onerror="this.onerror=null; this.src='/static/default-anime.jpg';">
+          {% else %}
+            <img src="/static/default-anime.jpg" alt="Affiche non disponible" class="img-fluid rounded my-4" 
+                 style="max-height:320px; max-width:100%;">
+          {% endif %}
+        </div>
+        <div class="col-md-8">
+          <div class="card-body">
+            <h5 class="card-title text-primary">{{ reco.titre }}</h5>
+            <p><span class="badge bg-info text-dark">Raisonnement</span> {{ reco.raisonnement }}</p>
+            <p><strong>Description :</strong> {{ reco.description }}</p>
+            <p><strong>Pourquoi :</strong> {{ reco.pourquoi }}</p>
+            <div class="mb-2">
+              <span class="badge bg-secondary">Épisodes : {{ reco.episodes }}</span>
+              <span class="badge bg-secondary ms-2">Durée/épisode : {{ reco.duration }} min</span>
+            </div>
+            <form method="post" action="/add_to_watchlist" class="d-inline">
+              <input type="hidden" name="anime_title" value="{{ reco.titre }}">
+              <a href="#" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#confirmWatchlistModal{{ loop.index }}">
+                  Ajouter à ma watchlist
+              </a>
+              {% if reco.id %}
+              <a href="https://anilist.co/anime/{{ reco.id }}" target="_blank" class="btn btn-outline-info btn-sm ms-2">
+                <i class="bi bi-box-arrow-up-right me-1"></i>Page AniList
+              </a>
+              {% endif %}
+
+              <!-- Modale de confirmation -->
+              <div class="modal fade" id="confirmWatchlistModal{{ loop.index }}" tabindex="-1" aria-labelledby="confirmWatchlistModalLabel{{ loop.index }}" aria-hidden="true">
+                  <div class="modal-dialog">
+                      <div class="modal-content">
+                          <div class="modal-header">
+                              <h5 class="modal-title" id="confirmWatchlistModalLabel{{ loop.index }}">Confirmation</h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                          </div>
+                          <div class="modal-body">
+                              Êtes-vous sûr de vouloir ajouter <strong>{{ reco.titre }}</strong> à votre watchlist&nbsp;?
+                          </div>
+                          <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                              <button type="submit" class="btn btn-primary">Confirmer</button>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+            </form>
+            <form method="post" action="/schedule_viewing" class="d-inline ms-2">
+              <input type="hidden" name="anime_title" value="{{ reco.titre }}">
+              <label for="num_episodes_{{ loop.index }}" class="form-label d-block mt-2">Épisodes à planifier (max {{ reco.episodes }}) :</label>
+              <input type="number" id="num_episodes_{{ loop.index }}" name="num_episodes" value="3" min="1" max="{{ reco.episodes }}"
+                     class="form-control form-control-sm w-25 d-inline"
+                     oninput="updateDuration('{{ loop.index }}', this.value, '{{ reco.duration }}')">
+              <p id="duration_{{ loop.index }}" class="text-muted small mt-1">
+                Durée estimée : {{ reco.duration * 3 }} minutes (par défaut)
+              </p>
+              <label for="start_time_{{ loop.index }}" class="form-label d-block mt-2">Choisir un créneau horaire :</label>
+              <input type="datetime-local" id="start_time_{{ loop.index }}" name="start_time" class="form-control form-control-sm w-50 d-inline">
+              <button type="submit" class="btn btn-outline-secondary btn-sm mt-2">Planifier dans l'agenda</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endfor %}
+</div>
+<form method="post" action="/reset_recommendations" class="mt-3 text-center">
+  <button type="submit" class="btn btn-danger">Nouvelles recommandations</button>
+</form>
+{% endif %}
+
+<style>
+.spinner-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1050;
+}
+.card.border-custom {
+  border: 2px solid #ffffff;
+}
+.btn-blue-gradient {
+  background: linear-gradient(90deg, #2196f3 0%, #0d47a1 100%);
+  color: #fff !important;
+  border: none;
+  transition: box-shadow 0.2s, transform 0.2s;
+  box-shadow: 0 4px 16px rgba(33, 150, 243, 0.15);
+}
+.btn-blue-gradient:hover, .btn-blue-gradient:focus {
+  background: linear-gradient(90deg, #0d47a1 0%, #2196f3 100%);
+  color: #fff !important;
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 8px 24px rgba(33, 150, 243, 0.18);
+}
+</style>
+
+<script>
+function updateDuration(index, episodes, duration) {
+  const total = parseInt(episodes || 0) * parseInt(duration);
+  const el = document.getElementById("duration_" + index);
+  if (el && !isNaN(total)) {
+    el.innerText = "Durée estimée : " + total + " minutes";
+  }
+}
+
+document.querySelectorAll('form[action="/schedule_viewing"]').forEach(form => {
+  form.addEventListener('submit', function(event) {
+    const startTimeInput = form.querySelector('input[name="start_time"]');
+    if (!startTimeInput.value) {
+      event.preventDefault();
+      alert("Veuillez sélectionner un créneau horaire avant de planifier.");
+    }
+  });
+});
+
+document.querySelector('form[method="post"]').addEventListener('submit', function() {
+  document.getElementById('loading-spinner').classList.remove('d-none');
+});
+</script>
+{% endblock %}

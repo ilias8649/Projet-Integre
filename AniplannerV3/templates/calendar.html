@@ -1,0 +1,121 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2 class="mb-4 mt-4 text-center">
+  <img src="https://www.gstatic.com/images/branding/product/1x/calendar_2020q4_48dp.png"
+       alt="Google Calendar" width="60" height="60" style="vertical-align:middle; margin-right:6px;">
+  Mon Agenda Google Calendar
+</h2>
+
+{% if message %}
+  <div class="alert alert-info mt-4 mb-4 text-center" role="alert">
+    {{ message }}
+  </div>
+{% endif %}
+
+{% if google_connected %}
+  <div class="alert alert-success text-center mb-4" role="alert">
+    ✅ Connecté à Google Calendar !
+  </div>
+
+  <!-- Section Statistiques -->
+  {% if stats %}
+  <div class="row mb-4 text-center">
+    <div class="col-md-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h5 class="card-title text-primary">{{ stats.total_anime_events }}</h5>
+          <p class="card-text">Sessions d'animés planifiées</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h5 class="card-title text-success">{{ stats.total_hours_planned }}h</h5>
+          <p class="card-text">Temps total de visionnage prévu</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h5 class="card-title text-warning">{{ stats.upcoming_this_week }}</h5>
+          <p class="card-text">Sessions cette semaine</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  <!-- Fin Section Statistiques -->
+
+  <h4 class="mt-5 mb-3">Événements à venir (30 prochains jours) :</h4>
+  {% if events %}
+    <div class="list-group shadow-sm">
+      {% for event in events %}
+        <div class="list-group-item list-group-item-action flex-column align-items-start {% if event.is_anime_event %}border-start border-primary border-5{% endif %} mb-2 rounded">
+          <div class="d-flex w-100 justify-content-between">
+            <h5 class="mb-1">
+              {% if event.is_anime_event %}🎌{% else %}📅{% endif %}
+              {{ event.summary }}
+            </h5>
+            <small class="text-muted">
+              {% if event.all_day %}
+                {{ event.start.strftime('%d %b %Y') }}
+                {% if event.start != event.end %}
+                 - {{ event.end.strftime('%d %b %Y') }}
+                {% endif %}
+                (Journée entière)
+              {% else %}
+                {{ event.start.strftime('%d %b %Y, %H:%M') }} - {{ event.end.strftime('%H:%M') }}
+              {% endif %}
+            </small>
+          </div>
+          {% if event.description %}
+            <p class="mb-1 text-muted small">{{ event.description[:150] }}{% if event.description|length > 150 %}...{% endif %}</p>
+          {% endif %}
+          {% if event.location %}
+            <small class="text-muted">📍 {{ event.location }}</small>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="alert alert-light text-center" role="alert">
+      Aucun événement à venir dans les 30 prochains jours.
+      <br><small>Utilisez la page <a href="{{ url_for('recommend') }}">Recommandations</a> pour planifier vos visionnages !</small>
+    </div>
+  {% endif %}
+   <div class="text-center mt-4">
+    <a href="{{ url_for('calendar') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-clockwise"></i> Rafraîchir les événements
+    </a>
+  </div>
+
+{% else %}
+  <p class="text-center">Connecte ton compte Google pour voir ton calendrier et planifier automatiquement tes séances de visionnage d'animés.</p>
+  <div class="text-center">
+    <a href="{{ url_for('authorize_gcal') }}" class="mt-4 btn btn-google-gradient btn-lg shadow px-5 py-3 fw-bold d-inline-flex align-items-center" style="font-size:1.2rem; letter-spacing:1px;">
+      <img src="https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png" alt="Google" width="28" height="28" class="me-2" style="background:white; border-radius:50%; padding:2px;">
+      Connecter mon compte Google
+    </a>
+  </div>
+{% endif %}
+
+<style>
+.btn-google-gradient {
+  background: linear-gradient(90deg, #4285F4 0%, #0F9D58 100%);
+  color: #fff !important;
+  border: none;
+  transition: box-shadow 0.2s, transform 0.2s;
+  box-shadow: 0 4px 16px rgba(66,133,244,0.15);
+}
+.btn-google-gradient:hover, .btn-google-gradient:focus {
+  background: linear-gradient(90deg, #0F9D58 0%, #4285F4 100%);
+  color: #fff !important;
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 8px 24px rgba(66,133,244,0.18);
+}
+/* Pour Bootstrap Icons si vous les utilisez pour le bouton rafraîchir */
+/* @import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"); */
+</style>
+{% endblock %}
